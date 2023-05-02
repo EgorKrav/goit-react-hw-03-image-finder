@@ -4,7 +4,7 @@ import ImageGallery from '../ImageGallery/ImageGallery';
 import Loader from '../Loader/Loader';
 import Modal from '../Modal/Modal';
 import Searchbar from '../Searchbar/Searchbar';
-import { fetchImages } from '../Service/Api';
+import { fetchImages } from '../../Service/Api';
 import { animateScroll } from 'react-scroll';
 
 class App extends Component {
@@ -24,20 +24,22 @@ class App extends Component {
   componentDidUpdate(_, prevState) {
     const { searchQuery, page } = this.state;
     if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
-      this.getImages(searchQuery, page);
+      const getImagesWithState = () => this.getImages(searchQuery, page);
+      getImagesWithState();
     }
   }
 
-  getImages = async (query, page) => {
+  getImages = async () => {
+    const { searchQuery, page } = this.state;
     this.setState({ isLoading: true });
-    if (!query) {
+    if (!searchQuery) {
       return;
     }
     try {
-      const { hits, totalHits } = await fetchImages(query, page);
+      const { hits, totalHits } = await fetchImages(searchQuery, page);
       this.setState(prevState => ({
         images: [...prevState.images, ...hits],
-        loadMore: this.state.page < Math.ceil(totalHits / this.state.per_page),
+        loadMore: page < Math.ceil(totalHits / this.state.per_page),
       }));
     } catch (error) {
       this.setState({ error: error.message });
@@ -87,18 +89,20 @@ class App extends Component {
     return (
       <>
         <Searchbar onSubmit={this.formSubmit} />
-
         {isLoading ? (
           <Loader />
         ) : (
           <ImageGallery images={images} openModal={this.openModal} />
         )}
-
-        {loadMore && <Button onloadMore={this.onloadMore} page={page} />}
-
-        {showModal && (
-          <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />
+        {!isLoading && loadMore && (
+          <Button onloadMore={this.onloadMore} page={page} />
         )}
+        {showModal && (
+          <Modal onClose={this.closeModal}>
+            <img src={largeImageURL} alt="modal content" />
+          </Modal>
+        )}
+        ;
       </>
     );
   }
