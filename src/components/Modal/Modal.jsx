@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import d from './Modal.module.css';
 
-const modalRoot = document.querySelector('#root');
+const modalRoot = document.querySelector('#modal-root');
 
 class Modal extends Component {
   componentDidMount() {
